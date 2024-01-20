@@ -41,7 +41,7 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     setDatabaseName();
     _chatPageCubit = ChatPageCubit();
-    messageList.insert(0, MessageModel(type: "received", message: "Hi Guru Prakash\nhow are you today\nhow can i help you today"));
+    messageList.insert(0, MessageModel(type: "received", message: "Good Morning\nHow can i help you today"));
     // messageList.insert(0, MessageModel(type: "sentMsg", message: "Hi Guru Prakash\nhow are you today\nhow can i help you todayyy yyy yyyyy yyyy yyyy yyy yyy"));
     init();
   }
@@ -80,9 +80,50 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {});
     }));
     messageList.insert(0, MessageForTapModel(type: "instruction", message: "Read", onTap: (){
+      messageList.removeAt(0);
+      messageList.removeAt(0);
       messageList.insert(0, MessageModel(type: "sentMsg", message: "Read"));
+      messageList.insert(0, MessageModel(type: "received", message: "Tell me what you want to search"));
+      _chatPageCubit.setChatInputUnblock();
+      _sendButtonFunction=readCollection;
       setState(() {});
     }));
+  }
+
+  readCollection() async{
+    print("reading collection");
+    String userInput = messageList[0].message;
+    print(userInput);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String dbName = prefs.getString("dbName")!;
+
+    List<dynamic> responseItems = await _chatPageCubit.readCollection(userInput, dbName);
+    String formatData(List<dynamic> data) {
+      String output = "";
+      for (var item in data) {
+        // Remove _id and iterate through remaining fields
+        for (var key in item.keys.where((key) => key != "_id")) {
+          output += "${key.toString().replaceAll("_", " ").toUpperCase()}: ${item[key]}\n";
+        }
+        output += "\n";
+      }
+      return output;
+    }
+
+    String outputString = formatData(responseItems);
+    String formattedOutput = "I found following data:\n\n${outputString.trim()}";
+    print("formated $formattedOutput");
+    // print(formattedOutput.isEmpty);
+    if(outputString.isEmpty || outputString == "[]" || outputString==""){
+      messageList.insert(0, MessageModel(type: "received", message: "Sorry I didn't find anything. Please try again"));
+      _chatPageCubit.setChatInputUnblock();
+      setState(() {});
+      // readCollection();
+    }else{
+      messageList.insert(0, MessageModel(type: "received", message: formattedOutput));
+      setState(() {});
+      init();
+    }
   }
 
   getAllCollections() async {
@@ -145,6 +186,7 @@ class _ChatPageState extends State<ChatPage> {
     }
 
   }
+
   addNewCollection() async {
     // In onTap for the send button:
     print("adding new collection");

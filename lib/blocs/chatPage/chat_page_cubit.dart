@@ -19,6 +19,14 @@ class ChatPageCubit extends Cubit<ChatPageState> {
     await ChatPageService.createNewCollection(newCollectionInput);
     emit(ChatPageInputUnblock());
   }
+  Future<List<dynamic>> readCollection(String userInput, String dbName) async {
+    emit(ChatPageInputBlock());
+    var input = {
+      "text": userInput,
+      "userId": dbName
+    };
+    return await ChatPageService.readCollection(input);
+  }
   ///for getting all collection names
   Future<List<String>> getAllCollections(String dbName) {
     emit(ChatPageInputBlock());
