@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:chat_bot_ui/blocs/chatPage/chat_page_cubit.dart';
 import 'package:chat_bot_ui/blocs/chatPage/chat_page_state.dart';
+import 'package:chat_bot_ui/config/const.dart';
 import 'package:chat_bot_ui/widgets/ReplyTapCard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class _ChatPageState extends State<ChatPage> {
 
   setDatabaseName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("dbName", "gurudatabase");
+    prefs.setString("dbName", Const.databaseName);
   }
   doNothing(){
     print("This is for preventing send button for doing something");
@@ -111,11 +112,11 @@ class _ChatPageState extends State<ChatPage> {
     }
 
     String outputString = formatData(responseItems);
-    String formattedOutput = "I found following data:\n\n${outputString.trim()}";
-    print("formated $formattedOutput");
+    String formattedOutput = "I found following data:\n\n${outputString.trim()}\n\nIf you didn't find your desired search then please provide me more details related to your search and try again.";
+    //print("formated $formattedOutput");
     // print(formattedOutput.isEmpty);
     if(outputString.isEmpty || outputString == "[]" || outputString==""){
-      messageList.insert(0, MessageModel(type: "received", message: "Sorry I didn't find anything. Please try again"));
+      messageList.insert(0, MessageModel(type: "received", message: "Sorry I didn't find anything. Can you please elaborate your search"));
       _chatPageCubit.setChatInputUnblock();
       setState(() {});
       // readCollection();
@@ -197,7 +198,7 @@ class _ChatPageState extends State<ChatPage> {
 
     // String userInput = _sendMessageController.text.trim();
     String userInput = messageList[0].message;
-    print(messageList[0].message);
+    // print(messageList[0].message);
     // print(userInput);
 
     Map<String, dynamic> jsonData = {};
@@ -237,7 +238,6 @@ class _ChatPageState extends State<ChatPage> {
       appBar: AppBar(
         leading: CircleAvatar(
           backgroundColor: Colors.white,
-          radius: 46,
           child: Image.asset(
               "assets/images/chatboticon.png",
             height: 40,
@@ -245,10 +245,11 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("Chat Bot"),
+        title: const Text("NextERP"),
         actions: [
           IconButton(onPressed: (){
             _chatPageCubit.setChatInputBlock();
+            _sendMessageController.clear();
             init();
 
           }, icon: const Icon(Icons.restart_alt))

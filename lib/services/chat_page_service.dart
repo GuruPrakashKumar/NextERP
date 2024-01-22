@@ -17,7 +17,20 @@ class ChatPageService{
       data: input
     );
     print(response.data);
-    return response.data;
+    print(response.data.runtimeType);
+    if(response.data.runtimeType == List<dynamic>){
+      print("executing if part");
+      return response.data;
+    }
+    print("executing else part");
+
+    List<dynamic> list = [];
+    if(response.data.containsKey("error")){
+      print("errorrrr");
+      return list;
+    }
+    list.add(response.data);
+    return list;
   }
 
   static Future<List<String>> getAllCollections(String dbName) async {
